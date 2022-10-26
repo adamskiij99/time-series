@@ -13,29 +13,35 @@ int main()
     int n = 500;
     double noise[n];
     double X[n];
-    int p = 3;
-    double phi[p] = {0.8, 0.05, 0.05};
+    int p = 2;
+    int q = 3;
+    double mu = 1;
+    double phi[p] = {0.45, 0.45};
+    double theta[q] = {0.3, 0.05, 0.05};
 
     // Make file for sample
-    std::ofstream AR;
-    AR.open ("AR.csv");
+    std::ofstream ARMA;
+    ARMA.open ("ARMA.csv");
 
     // Set X to zero to avoid strange happenings
     for(int i = 0; i < n; i++){
         X[i] = 0;
+        noise[i] = normal_dist(e);
     }
 
-    // Generate the AR(p) process: X_t = (sum{i=1...p} X_(t-i) * phi_i) + noise_t
+    // Generate the ARMA(p, q) process: X_t = mu + (sum{i=1...p} X_(t-i) * phi_i) + (sum{i=1...q} noise_(t-i) * theta_i) + noise_t
     for(int i = 0; i < n; i++){
-        noise[i] = normal_dist(e);
         for(int j = 0; j < p; j++){
             X[i] += X[i - (j + 1)] * phi[j];
         }
-        X[i] += noise[i];
-        AR << X[i] << ","; // Write
+        for(int j = 0; j < q; j++){
+            X[i] += noise[i - (j + 1)] * theta[j];
+        }
+        X[i] += mu + noise[i];
+        ARMA << X[i] << ","; // Write
     }
 
-    AR.close();
+    ARMA.close();
     std::cout << "Done." << std::endl;
     return 0;
 }
