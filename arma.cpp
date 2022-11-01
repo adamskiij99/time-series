@@ -1,6 +1,8 @@
 #include <iostream>
 #include <random>
 #include <fstream>
+#include <vector>
+#include <algorithm>
 
 int main()
 {
@@ -11,8 +13,8 @@ int main()
 
     // Initialise
     int n = 500;
-    double noise[n];
-    double X[n];
+    std::vector<double> noise(n, 0);
+    std::vector<double> X(n, 0);
     int p = 2;
     int q = 3;
     double mu = 1;
@@ -23,7 +25,7 @@ int main()
     std::ofstream ARMA;
     ARMA.open ("ARMA.csv");
 
-    // Set X to zero to avoid strange happenings
+    // Set X to zero to avoid strange happenings and initialise noise
     for(int i = 0; i < n; i++){
         X[i] = 0;
         noise[i] = normal_dist(e);
@@ -32,10 +34,14 @@ int main()
     // Generate the ARMA(p, q) process: X_t = mu + (sum{i=1...p} X_(t-i) * phi_i) + (sum{i=1...q} noise_(t-i) * theta_i) + noise_t
     for(int i = 0; i < n; i++){
         for(int j = 0; j < p; j++){
-            X[i] += X[i - (j + 1)] * phi[j];
+            if(i - (j + 1) > -1){
+                X[i] += X[i - (j + 1)] * phi[j];
+            }
         }
         for(int j = 0; j < q; j++){
-            X[i] += noise[i - (j + 1)] * theta[j];
+            if(i - (j + 1) > -1){
+                X[i] += noise[i - (j + 1)] * theta[j];
+            }
         }
         X[i] += mu + noise[i];
         ARMA << X[i] << ","; // Write
